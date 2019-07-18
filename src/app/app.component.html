@@ -14,7 +14,8 @@
           </a> -->
           <a *ngFor="let dicom of dicomsList; let i=index"  class="list-group-item"
               oncontextmenu="return false" unselectable="on" onselectstart="return false;" onmousedown="return false;"
-              (click)="loadDicomById(dicom, $event)">
+              (click)="loadDicomById(dicom._id, $event)">
+              <img src="./assets/thumbnails/{{dicom._id}}.jpg">
               <div id="mrtopright" style="position: absolute; top:3px; right:3px">
                   <div id="imageCount" style="color:yellow; font-size: 7pt">{{i}}</div>
               </div>
@@ -114,7 +115,7 @@
                   <button type="button" (click)="enableBrush()" class="btn btn-sm btn-default" data-container='body'
                       data-toggle="tooltip" data-placement="bottom" title="Brush"><span class="fas fa-paint-brush"></span></button>
                   <!-- Save segmentation -->
-                  <button type="button" (click)="saveSegmentedImg()" class="btn btn-sm btn-default" data-container='body'
+                  <button type="button" (click)="saveSegmentedImg($event)" class="btn btn-sm btn-default" data-container='body'
                       data-toggle="tooltip" data-placement="bottom" title="Save"><span class="fas fa-save"></span></button>
               </div>
           </div>

@@ -21,6 +21,7 @@ export class DICOMViewerComponent implements OnInit {
 
     public seriesList = []; // list of series on the images being displayed
     public dicomsList = [];
+    public currentDicom: string;
     public currentSeriesIndex = 0;
     public currentSeries: any = {};
     public imageCount = 0; // total image count being viewed
@@ -91,13 +92,14 @@ export class DICOMViewerComponent implements OnInit {
      * @param imageIdList list of imageIds to load and display
      */
     loadDicomById(imageId: string, event) {
+        this.currentDicom = imageId;
         this.dicomService.getDicomById(imageId).subscribe(
             (data: File) => {
                 var listOfDicomsFile = document.getElementsByClassName('list-group-item') as HTMLCollection;
                 for (var i = 0; i < listOfDicomsFile.length; i++) {
                   listOfDicomsFile[i].classList.remove('active');
                 }
-                event.target.classList.add('active');
+                event.target.parentElement.classList.add('active');
                 this.imageCount = 1;
                 var dicomFile = new File([data], imageId);
                 var imageId = cornerstoneWADOImageLoader.wadouri.fileManager.add(dicomFile);
@@ -114,12 +116,17 @@ export class DICOMViewerComponent implements OnInit {
                 // this.targetImageCount = maxImages;
                 // for (let index = 0; index < maxImages; index++) {
                 //     const imageId = imageIdList[index];
-                var numFrames = 1;
+                // var numFrames = imageId.intString('x00280008');
+                // if(!numFrames) {
+                //     alert('Missing element NumberOfFrames (0028,0008)');
+                //     return;
+                // }
+    
 
-                for(var i=2; i < numFrames; i++) {
-                  var id = imageId + "?frame="+i;
-                  this.imageIdList.push(id);
-                }
+                // for(var i=2; i < numFrames; i++) {
+                //   var id = imageId + "?frame="+i;
+                //   this.imageIdList.push(id);
+                // }
                 cornerstone.loadAndCacheImage(imageId).then(imageData => { this.imageLoaded(imageData) });
                //}
             }
@@ -514,18 +521,19 @@ export class DICOMViewerComponent implements OnInit {
             this.segmentationCanvas.style.display = `none`;
         }
     }
-    public saveSegmentedImg() {
+    public saveSegmentedImg(event) {
         // сохраняет цвет маски
         this.segmentationCanvasContext.globalAlpha = 1;
         this.segmentationCanvasContext.globalCompositeOperation = "destination-atop"; 
         this.segmentationCanvasContext.rect(0, 0, this.segmentationCanvas.clientWidth, this.segmentationCanvas.clientHeight );
         this.segmentationCanvasContext.fillStyle = 'black';
         this.segmentationCanvasContext.fill();
-        var image = this.segmentationCanvas.toDataURL('image/png').replace("image/png", "image/octet-stream");
-        var link = document.createElement('a');
-        link.download = "my-image.png";
-        link.href = image;
-        link.click();
+        var image = this.segmentationCanvas.toDataURL('image/png');
+        event.target.blur();
         this.clearCanvas();
+        this.dicomService.saveMask(this.currentDicom, image).subscribe(
+          data => {
+          }
+        ); 
     }
 }

@@ -46,6 +46,11 @@ a.list-group-item {
     z-index: 5;
     margin-bottom: 3px;
     height: 80px;
+    border-bottom: 2px solid transparent;
+}
+a.list-group-item img {
+    width: 75px;
+    height: 75px;
 }
 a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.active:focus {
     border-bottom: 2px solid yellow;
@@ -56,7 +61,7 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 .btn-default{
     box-shadow: none;
 }
-.btn-default:focus span{
+.btn-default:focus span {
     color: yellow;
 }
 #segmentation-canvas {
