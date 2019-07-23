@@ -21,7 +21,7 @@
     "@angular/material": "^8.0.0",
     "@angular/platform-browser": "^8.0.0",
     "@angular/platform-browser-dynamic": "^8.0.0",
-    "@angular/router": "^8.0.0",
+    "@angular/router": "^8.1.1",
     "bootstrap": "^4.3.1",
     "core-js": "^2.6.1",
     "cornerstone-core": "^2.3.0",

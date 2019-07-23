@@ -185,7 +185,6 @@ export class CornerstoneDirective implements OnInit, AfterViewChecked {
     cornerstoneTools.wwwcTouchDrag.activate(this.element) // - Drag
     cornerstoneTools.zoomTouchPinch.activate(this.element) // - Pinch
     cornerstoneTools.panMultiTouch.activate(this.element) // - Multi (x2)
-
     // Stack tools
 
     // Define the Stack object
@@ -194,12 +193,19 @@ export class CornerstoneDirective implements OnInit, AfterViewChecked {
       imageIds: this.imageIdList
     };
 
-    cornerstoneTools.addStackStateManager(this.element, ['playClip']);
+    const timeSeries = {
+      currentStackIndex: 0,
+      stacks : [
+          stack
+      ]
+    };
+
+    cornerstoneTools.addStackStateManager(this.element, ['stack', 'playClip']);
     // Add the stack tool state to the enabled element
-    cornerstoneTools.addStackStateManager(this.element, ['stack']);
     cornerstoneTools.addToolState(this.element, 'stack', stack);
+    cornerstoneTools.addTimeSeriesStateManager(this.element, ['timeSeries', 'timeSeriesPlayer', 'timeSeriesScroll']);
+    cornerstoneTools.addToolState(this.element, 'timeSeries', timeSeries);
     cornerstoneTools.stackScrollWheel.activate(this.element);
-    // Enable all tools we want to use with this element
     cornerstoneTools.stackScrollKeyboard.activate(this.element);
     //cornerstoneTools.stackPrefetch.enable(this.element);
 
