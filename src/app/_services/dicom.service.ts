@@ -17,6 +17,14 @@ export class DicomService {
         return this.http.get(`${this.configService.api()}/study/${id}`,  { responseType: 'blob' });
     }
 
+    getDicomMetaDataById(id: string) {
+        return this.http.get(`${this.configService.api()}/study/${id}/metadata`);
+    }
+
+    addDicomMetadataById(id: string, json) {
+        return this.http.get(`${this.configService.api()}/study/${id}/metadata`, json);
+    }
+
     saveMask(id: string, dataUrl) {
         var file = this.dataURItoBlob(dataUrl);
         const formData = new FormData();
