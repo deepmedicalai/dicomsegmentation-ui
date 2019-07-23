@@ -136,6 +136,11 @@ export class DICOMViewerComponent implements OnInit {
         this.dicomService.getDicomMetaDataById(id).subscribe( 
             (data: any) => {
                 this.currentDicomMetadata = data;
+        },
+            err => {
+                this.currentDicomMetadata = {
+                    relevant: ''
+                };
         });
     }
 
@@ -531,11 +536,12 @@ export class DICOMViewerComponent implements OnInit {
         this.segmentationCanvasContext.rect(0, 0, this.segmentationCanvas.clientWidth, this.segmentationCanvas.clientHeight );
         this.segmentationCanvasContext.fillStyle = 'black';
         this.segmentationCanvasContext.fill();
-        var image = this.segmentationCanvasContext.toDataURL('image/png');
+        var image = this.segmentationCanvas.toDataURL('image/png');
         event.target.blur();
         this.clearCanvas();
         this.dicomService.saveMask(this.currentDicom._id, image).subscribe(
           data => {
+            this.uploadDicomMetadata(this.currentDicom._id);
             this.dicomsList = this.dicomsList.map((i) => {
                 if(i._id === this.currentDicom._id) {
                     this.currentDicom = i;

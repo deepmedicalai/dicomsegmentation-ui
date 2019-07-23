@@ -22,7 +22,7 @@ export class DicomService {
     }
 
     addDicomMetadataById(id: string, json) {
-        return this.http.get(`${this.configService.api()}/study/${id}/metadata`, json);
+        return this.http.post(`${this.configService.api()}/study/${id}/metadata`, json);
     }
 
     saveMask(id: string, dataUrl) {
