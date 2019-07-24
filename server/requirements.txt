@@ -1,0 +1,6 @@
+flask
+pydicom
+requests_toolbelt
+opencv-python
+Pillow
+opencv-python
