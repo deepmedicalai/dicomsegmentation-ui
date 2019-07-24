@@ -531,25 +531,27 @@ export class DICOMViewerComponent implements OnInit {
     }
     public saveSegmentedImg(event) {
         // сохраняет цвет маски
-        this.segmentationCanvasContext.globalAlpha = 1;
-        this.segmentationCanvasContext.globalCompositeOperation = "destination-atop"; 
-        this.segmentationCanvasContext.rect(0, 0, this.segmentationCanvas.clientWidth, this.segmentationCanvas.clientHeight );
-        this.segmentationCanvasContext.fillStyle = 'black';
-        this.segmentationCanvasContext.fill();
-        var image = this.segmentationCanvas.toDataURL('image/png');
-        event.target.blur();
-        this.clearCanvas();
-        this.dicomService.saveMask(this.currentDicom._id, image).subscribe(
-          data => {
-            this.uploadDicomMetadata(this.currentDicom._id);
-            this.dicomsList = this.dicomsList.map((i) => {
-                if(i._id === this.currentDicom._id) {
-                    this.currentDicom = i;
-                    i.has_mask = "true";
-                }
-                return i;
-            });
-          }
-        ); 
+        if(this.segmentationCanvasContext) {
+            this.segmentationCanvasContext.globalAlpha = 1;
+            this.segmentationCanvasContext.globalCompositeOperation = "destination-atop"; 
+            this.segmentationCanvasContext.rect(0, 0, this.segmentationCanvas.clientWidth, this.segmentationCanvas.clientHeight );
+            this.segmentationCanvasContext.fillStyle = 'black';
+            this.segmentationCanvasContext.fill();
+            var image = this.segmentationCanvas.toDataURL('image/png');
+            event.target.blur();
+            this.clearCanvas();
+            this.dicomService.saveMask(this.currentDicom._id, image).subscribe(
+            data => {
+                this.dicomsList = this.dicomsList.map((i) => {
+                    if(i._id === this.currentDicom._id) {
+                        this.currentDicom = i;
+                        i.has_mask = "true";
+                    }
+                    return i;
+                });
+            }
+            ); 
+        }
+        this.uploadDicomMetadata(this.currentDicom._id);
     }
 }
