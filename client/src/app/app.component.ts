@@ -11,7 +11,7 @@ declare const cornerstoneWADOImageLoader;
 @Component({
     selector: 'dicom-viewer',
     templateUrl: './app.component.html',
-    styleUrls: ['./app.component.css'],
+    styleUrls: ['./app.component.scss'],
     providers: [DicomService, CanvasScalingService]
 })
 export class DICOMViewerComponent implements OnInit {
@@ -539,7 +539,7 @@ export class DICOMViewerComponent implements OnInit {
             const image = this.scalingService.getImageData(this.segmentationCanvas, this.segmentationCanvasContext);    
             event.target.blur();
             this.clearCanvas();
-            this.dicomService.saveMask(this.currentDicom, image).subscribe(
+            this.dicomService.saveMask(this.currentDicom._id, image).subscribe(
               data => {
               }
             );  
