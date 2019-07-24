@@ -82,4 +82,34 @@ a.list-group-item.active, a.list-group-item.active:hover, a.list-group-item.acti
 #toolbar {
     display: flex;
     justify-content: space-between;
+    border-bottom: 1px dotted white;
+}
+
+#propertiesArea {
+    width: 200px;
+    padding: 10px;
+    padding-top: 35px;
+    font-size: 12px;
+    background: #000;
+    color: #fff;
+    margin-left: 5px;
+    .form-group {
+        border-bottom: 1px dotted grey;
+        padding-bottom: 7px;
+    }
+    .radios-group {
+        display: flex;
+        font-size: 10px;
+        .radio {
+            display: flex;
+            margin-right: 15px;
+            label {
+                margin: 0px;
+                margin-left: 7px;
+            }
+            input[type="radio"] {
+                width: 10px;
+            }
+        }
+    }
 }

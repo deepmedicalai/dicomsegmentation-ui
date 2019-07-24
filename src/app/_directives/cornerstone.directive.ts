@@ -10,6 +10,7 @@ declare const cornerstoneTools;
 export class CornerstoneDirective implements OnInit, AfterViewChecked {
 
   public element: any;
+  public segmentCanvas: any;
 
   public imageList = [];
   private imageIdList = [];
@@ -18,6 +19,8 @@ export class CornerstoneDirective implements OnInit, AfterViewChecked {
   public patientName = ''; // current image Patient name, do display on the overlay
   public hospital = ''; // current image Institution name, to display on the overlay
   public instanceNumber = ''; // current image Instance #, to display on the overlay
+  public numOfFrames;
+  public zoom;
 
   public get windowingValue():string {
     if (this.isCornerstoneEnabled) {
@@ -115,6 +118,7 @@ export class CornerstoneDirective implements OnInit, AfterViewChecked {
     this.patientName = '';
     this.hospital = '';
     this.instanceNumber = '';
+    this.numOfFrames = null;
   }
 
   public previousImage() {
@@ -187,11 +191,26 @@ export class CornerstoneDirective implements OnInit, AfterViewChecked {
     cornerstoneTools.panMultiTouch.activate(this.element) // - Multi (x2)
     // Stack tools
 
+
     // Define the Stack object
     const stack = {
       currentImageIdIndex: this.currentIndex,
-      imageIds: this.imageIdList
+      imageIds: this.imageIdList,
+      frameRate: 10
     };
+
+    this.numOfFrames = image.data.intString('x00280008');
+    if(this.numOfFrames) {
+      for(var i=1; i < this.numOfFrames; i++) {
+        var id = image.imageId + "?frame="+i;
+        this.imageIdList.push(id);
+      }
+      stack.imageIds = this.imageIdList;
+    }
+    else {
+      this.numOfFrames = 0;
+    }
+    
 
     const timeSeries = {
       currentStackIndex: 0,
@@ -200,13 +219,29 @@ export class CornerstoneDirective implements OnInit, AfterViewChecked {
       ]
     };
 
+    const playClipData = {
+      intervalId: undefined,
+      framesPerSecond: 30,
+      lastFrameTimeStamp: undefined,
+      frameRate: 0,
+      frameTimeVector: undefined,
+      ignoreFrameTimeVector: false,
+      usingFrameTimeVector: false,
+      speed: 1,
+      reverse: false,
+      loop: true,
+    };
+
+    cornerstoneTools.addToolState(this.element, 'playClip', playClipData);
     cornerstoneTools.addStackStateManager(this.element, ['stack', 'playClip']);
     // Add the stack tool state to the enabled element
     cornerstoneTools.addToolState(this.element, 'stack', stack);
     cornerstoneTools.addTimeSeriesStateManager(this.element, ['timeSeries', 'timeSeriesPlayer', 'timeSeriesScroll']);
     cornerstoneTools.addToolState(this.element, 'timeSeries', timeSeries);
+    cornerstoneTools.stackScroll.activate(this.element, 1);
     cornerstoneTools.stackScrollWheel.activate(this.element);
     cornerstoneTools.stackScrollKeyboard.activate(this.element);
+    cornerstoneTools.scrollIndicator.enable(this.element);
     //cornerstoneTools.stackPrefetch.enable(this.element);
 
   }

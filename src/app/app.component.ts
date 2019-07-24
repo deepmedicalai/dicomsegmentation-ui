@@ -22,7 +22,14 @@ export class DICOMViewerComponent implements OnInit {
 
     public seriesList = []; // list of series on the images being displayed
     public dicomsList = [];
-    public currentDicom: string;
+    public currentDicom = {
+        _id: '',
+        has_mask: "false"
+    };
+    public currentDicomMetadata = {
+        relevant: ''
+    };
+    public currentDicomEl;
     public currentSeriesIndex = 0;
     public currentSeries: any = {};
     public imageCount = 0; // total image count being viewed
@@ -85,6 +92,7 @@ export class DICOMViewerComponent implements OnInit {
                 }
             }
         });
+        cornerstoneWADOImageLoader.wadouri.dataSetCacheManager.purge();
         this.loadDicomList();
         this.element = this.viewPort.element; 
     }
@@ -94,14 +102,16 @@ export class DICOMViewerComponent implements OnInit {
      *
      * @param imageIdList list of imageIds to load and display
      */
-    loadDicomById(imageId: string, event) {
-        this.currentDicom = imageId;
-        this.dicomService.getDicomById(imageId).subscribe(
+    loadDicomById(dicomData, event) {
+        this.currentDicom = dicomData;
+        this.resetAllTools();
+        this.dicomService.getDicomById(this.currentDicom._id).subscribe(
             (data: File) => {
                 var listOfDicomsFile = document.getElementsByClassName('list-group-item') as HTMLCollection;
                 for (var i = 0; i < listOfDicomsFile.length; i++) {
                   listOfDicomsFile[i].classList.remove('active');
                 }
+                this.currentDicomEl = event;
                 event.target.parentElement.classList.add('active');
                 this.imageCount = 1;
                 var dicomFile = new File([data], imageId);
@@ -111,36 +121,16 @@ export class DICOMViewerComponent implements OnInit {
                 this.viewPort.resetImageCache(); // clean up image cache
                 this.currentSeriesIndex = 0; // always display first series
                 this.loadedImages = []; // reset list of images already loaded
-                //
-                // loop thru all imageIds, load and cache them for exhibition (up the the maximum limit defined)
-                //
-                // const maxImages = (this.maxImagesToLoad <= 0) ? imageIdList.length : Math.min(this.maxImagesToLoad, imageIdList.length);
-                // this.loadingImages = true; // activate progress indicator
-                // this.targetImageCount = maxImages;
-                // for (let index = 0; index < maxImages; index++) {
-                //     const imageId = imageIdList[index];
-                // var numFrames = imageId.intString('x00280008');
-                // if(!numFrames) {
-                //     alert('Missing element NumberOfFrames (0028,0008)');
-                //     return;
-                // }
-    
-
-                // for(var i=2; i < numFrames; i++) {
-                //   var id = imageId + "?frame="+i;
-                //   this.imageIdList.push(id);
-                // }
+                this.loadDicomMetadata(this.currentDicom._id);
                 cornerstone.loadAndCacheImage(imageId).then(imageData => { 
                     this.imageLoaded(imageData);
                     this.scalingService.updateImage(imageData.rows, imageData.columns);
                 });
-               //}
             }
         );
     }
 
     loadDicomList() {
-        cornerstoneWADOImageLoader.wadouri.dataSetCacheManager.purge();
         this.dicomService.getListOfDicoms().subscribe(
             data => {
                 this.dicomsList = JSON.parse(JSON.stringify(data.data)); // start a new series list
@@ -148,6 +138,23 @@ export class DICOMViewerComponent implements OnInit {
         )
     }
 
+    loadDicomMetadata(id) {
+        this.dicomService.getDicomMetaDataById(id).subscribe( 
+            (data: any) => {
+                this.currentDicomMetadata = data;
+        },
+            err => {
+                this.currentDicomMetadata = {
+                    relevant: ''
+                };
+        });
+    }
+
+    uploadDicomMetadata(id) {
+        this.dicomService.addDicomMetadataById(id, this.currentDicomMetadata).subscribe( 
+            (data: any) => {
+        });
+    }
     /**
      * Load the next batch of images
      */
@@ -174,8 +181,6 @@ export class DICOMViewerComponent implements OnInit {
      * @param imageData the dicom image data
      */
     private imageLoaded(imageData) {
-        //console.log(imageData.imageId)
-        // build list of series in all loadded images
         const series = {
             studyID: imageData.data.string('x0020000d'),
             seriesID: imageData.data.string('x0020000e'),
@@ -434,7 +439,7 @@ export class DICOMViewerComponent implements OnInit {
             //Variables
             this.canvasx = this.segmentationCanvas.getBoundingClientRect().left;
             this.canvasy = this.segmentationCanvas.getBoundingClientRect().top;
-
+          
             this.segmentationCanvas.onmouseenter = () => {
                 this.brushDiameterElement.style.cssText += `display: block; background: ${this.color}`;
             };
@@ -529,13 +534,16 @@ export class DICOMViewerComponent implements OnInit {
         }
     }
     public saveSegmentedImg(event) {
-        const image = this.scalingService.getImageData(this.segmentationCanvas, this.segmentationCanvasContext);
-         
-        event.target.blur();
-        this.clearCanvas();
-        this.dicomService.saveMask(this.currentDicom, image).subscribe(
-          data => {
-          }
-        ); 
+        // сохраняет цвет маски
+        if(this.segmentationCanvasContext) {
+            const image = this.scalingService.getImageData(this.segmentationCanvas, this.segmentationCanvasContext);    
+            event.target.blur();
+            this.clearCanvas();
+            this.dicomService.saveMask(this.currentDicom, image).subscribe(
+              data => {
+              }
+            );  
+        }
+        this.uploadDicomMetadata(this.currentDicom._id);
     }
 }
