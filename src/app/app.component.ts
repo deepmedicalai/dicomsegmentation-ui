@@ -465,13 +465,14 @@ export class DICOMViewerComponent implements OnInit {
                 this.region.closePath();
                 this.segmentationCanvasContext.fillStyle = this.color;
                 this.segmentationCanvasContext.fill(this.region);
-                };
+            };
 
                 //Mousemove
-                this.segmentationCanvas.onmousemove = (e) => {
+            this.segmentationCanvas.onmousemove = (e) => {
                 this.mousex = e.clientX - this.canvasx;
                 this.mousey = e.clientY - this.canvasy;
-                this.brushDiameterElement.style.cssText += `left: ${e.offsetX - this.brushDiameter / 2}px; top: ${e.offsetY - this.brushDiameter / 2}px`;
+                var offset = getComputedStyle(this.segmentationCanvas).left.replace('px', '');
+                this.brushDiameterElement.style.cssText += `left: ${this.mousex + +offset - this.brushDiameter / 2}px; top: ${this.mousey - this.brushDiameter / 2}px`;
                 
                 if (this.mousedown) {
                     this.segmentationCanvasContext.beginPath();
@@ -499,13 +500,14 @@ export class DICOMViewerComponent implements OnInit {
             };
 
             this.segmentationCanvas.onwheel = (e) => {
+                var offset = getComputedStyle(this.segmentationCanvas).left.replace('px', '');
                 if (e.deltaY < 0) {
                     this.brushDiameter -= 4;
                     if(this.brushDiameter < 0) {
                         this.brushDiameter = 1; 
                     }
                     this.brushDiameterElement.style.cssText += `width: ${this.brushDiameter}px; height: ${this.brushDiameter}px; 
-                                                                left: ${e.offsetX - this.brushDiameter / 2}px; top: ${e.offsetY - this.brushDiameter / 2}px`;
+                                                                left: ${this.mousex + +offset - this.brushDiameter / 2}px; top: ${this.mousey - this.brushDiameter / 2}px`;
                 }
                 if (e.deltaY > 0) {
                     this.brushDiameter += 4;
@@ -513,7 +515,7 @@ export class DICOMViewerComponent implements OnInit {
                         this.brushDiameter = 300; 
                     }
                     this.brushDiameterElement.style.cssText += `width: ${this.brushDiameter}px; height: ${this.brushDiameter}px; 
-                                                                left: ${e.offsetX - this.brushDiameter / 2}px; top: ${e.offsetY - this.brushDiameter / 2}px`;
+                                                                left: ${this.mousex + +offset - this.brushDiameter / 2}px; top: ${this.mousey - this.brushDiameter / 2}px`;
                 }
                 return false;
             };
