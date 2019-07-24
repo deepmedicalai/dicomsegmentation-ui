@@ -2,6 +2,7 @@ import { Component, ViewChild, OnInit, Input, ViewChildren } from '@angular/core
 import { DicomService } from './_services/dicom.service';
 import { CornerstoneDirective } from './_directives/cornerstone.directive';
 import { ThumbnailDirective } from './_directives/thumbnail.directive';
+import { CanvasScalingService } from './_services/scaling.service';
 
 declare const cornerstone;
 declare const cornerstoneTools;
@@ -11,7 +12,7 @@ declare const cornerstoneWADOImageLoader;
     selector: 'dicom-viewer',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.css'],
-    providers: [DicomService]
+    providers: [DicomService, CanvasScalingService]
 })
 export class DICOMViewerComponent implements OnInit {
 
@@ -69,7 +70,8 @@ export class DICOMViewerComponent implements OnInit {
     private region: Path2D;
 
     constructor(
-        private dicomService: DicomService
+        private dicomService: DicomService,
+        private scalingService: CanvasScalingService
     ) { }
 
     ngOnInit() {
@@ -86,6 +88,7 @@ export class DICOMViewerComponent implements OnInit {
         this.loadDicomList();
         this.element = this.viewPort.element; 
     }
+
     /**
      * Load dicom images for display
      *
@@ -127,7 +130,10 @@ export class DICOMViewerComponent implements OnInit {
                 //   var id = imageId + "?frame="+i;
                 //   this.imageIdList.push(id);
                 // }
-                cornerstone.loadAndCacheImage(imageId).then(imageData => { this.imageLoaded(imageData) });
+                cornerstone.loadAndCacheImage(imageId).then(imageData => { 
+                    this.imageLoaded(imageData);
+                    this.scalingService.updateImage(imageData.rows, imageData.columns);
+                });
                //}
             }
         );
@@ -413,10 +419,9 @@ export class DICOMViewerComponent implements OnInit {
 
     }
 
-    public createCanvasSegmentation() {      
+    public createCanvasSegmentation() {
         this.segmentationCanvas = document.getElementById('segmentation-canvas') as HTMLCanvasElement;
-        this.segmentationCanvas.height = this.element.clientHeight;
-        this.segmentationCanvas.width = this.element.clientWidth;
+        this.scalingService.initCanvas(this.viewPort, this.segmentationCanvas);
         this.brushDiameterElement = document.getElementById('brush-diameter');
     }
 
@@ -427,8 +432,8 @@ export class DICOMViewerComponent implements OnInit {
             this.segmentationCanvas.style.display = `block`;
             this.segmentationCanvasContext = this.segmentationCanvas.getContext('2d');
             //Variables
-            this.canvasx = this.element.getBoundingClientRect().left;
-            this.canvasy = this.element.getBoundingClientRect().top;
+            this.canvasx = this.segmentationCanvas.getBoundingClientRect().left;
+            this.canvasy = this.segmentationCanvas.getBoundingClientRect().top;
 
             this.segmentationCanvas.onmouseenter = () => {
                 this.brushDiameterElement.style.cssText += `display: block; background: ${this.color}`;
@@ -460,13 +465,14 @@ export class DICOMViewerComponent implements OnInit {
                 this.region.closePath();
                 this.segmentationCanvasContext.fillStyle = this.color;
                 this.segmentationCanvasContext.fill(this.region);
-                };
+            };
 
                 //Mousemove
-                this.segmentationCanvas.onmousemove = (e) => {
+            this.segmentationCanvas.onmousemove = (e) => {
                 this.mousex = e.clientX - this.canvasx;
                 this.mousey = e.clientY - this.canvasy;
-                this.brushDiameterElement.style.cssText += `left: ${e.offsetX - this.brushDiameter / 2}px; top: ${e.offsetY - this.brushDiameter / 2}px`;
+                var offset = getComputedStyle(this.segmentationCanvas).left.replace('px', '');
+                this.brushDiameterElement.style.cssText += `left: ${this.mousex + +offset - this.brushDiameter / 2}px; top: ${this.mousey - this.brushDiameter / 2}px`;
                 
                 if (this.mousedown) {
                     this.segmentationCanvasContext.beginPath();
@@ -494,13 +500,14 @@ export class DICOMViewerComponent implements OnInit {
             };
 
             this.segmentationCanvas.onwheel = (e) => {
+                var offset = getComputedStyle(this.segmentationCanvas).left.replace('px', '');
                 if (e.deltaY < 0) {
                     this.brushDiameter -= 4;
                     if(this.brushDiameter < 0) {
                         this.brushDiameter = 1; 
                     }
                     this.brushDiameterElement.style.cssText += `width: ${this.brushDiameter}px; height: ${this.brushDiameter}px; 
-                                                                left: ${e.offsetX - this.brushDiameter / 2}px; top: ${e.offsetY - this.brushDiameter / 2}px`;
+                                                                left: ${this.mousex + +offset - this.brushDiameter / 2}px; top: ${this.mousey - this.brushDiameter / 2}px`;
                 }
                 if (e.deltaY > 0) {
                     this.brushDiameter += 4;
@@ -508,7 +515,7 @@ export class DICOMViewerComponent implements OnInit {
                         this.brushDiameter = 300; 
                     }
                     this.brushDiameterElement.style.cssText += `width: ${this.brushDiameter}px; height: ${this.brushDiameter}px; 
-                                                                left: ${e.offsetX - this.brushDiameter / 2}px; top: ${e.offsetY - this.brushDiameter / 2}px`;
+                                                                left: ${this.mousex + +offset - this.brushDiameter / 2}px; top: ${this.mousey - this.brushDiameter / 2}px`;
                 }
                 return false;
             };
@@ -522,13 +529,8 @@ export class DICOMViewerComponent implements OnInit {
         }
     }
     public saveSegmentedImg(event) {
-        // сохраняет цвет маски
-        this.segmentationCanvasContext.globalAlpha = 1;
-        this.segmentationCanvasContext.globalCompositeOperation = "destination-atop"; 
-        this.segmentationCanvasContext.rect(0, 0, this.segmentationCanvas.clientWidth, this.segmentationCanvas.clientHeight );
-        this.segmentationCanvasContext.fillStyle = 'black';
-        this.segmentationCanvasContext.fill();
-        var image = this.segmentationCanvas.toDataURL('image/png');
+        const image = this.scalingService.getImageData(this.segmentationCanvas, this.segmentationCanvasContext);
+         
         event.target.blur();
         this.clearCanvas();
         this.dicomService.saveMask(this.currentDicom, image).subscribe(
