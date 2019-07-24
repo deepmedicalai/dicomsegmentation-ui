@@ -1,0 +1,14 @@
+version: '3'
+services:
+  python-api:
+    container_name: "dicom-api"
+    build: 
+      dockerfile: ./python-api.dockerfile
+      context: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./dicom-segmentation:/app
+      - ./data:/data
+    environment:
+      FLASK_ENV: development
