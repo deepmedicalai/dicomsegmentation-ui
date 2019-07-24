@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 import cv2
 
-upload_dir = '/data'
+upload_dir = '../data'
 images_dir = os.path.join(upload_dir, 'images')
 thumbnails_dir = os.path.join(upload_dir, 'thumbnails')
 

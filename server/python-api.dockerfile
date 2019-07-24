@@ -13,6 +13,6 @@ COPY ./data /data
 # COPY . .
 
 RUN python3 -m venv env
-RUN python3 -c 'from dicom import create_thumbnail; create_thumbnail()'
+# RUN python3 -c 'from dicom import create_thumbnail; create_thumbnail()'
 
 CMD [ "flask", "run" ]
