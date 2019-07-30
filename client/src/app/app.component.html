@@ -129,6 +129,33 @@
                 </div>
             </div>
         </div>
+        <div class="form-group">
+            <label>Class: </label>
+            <div class="radios-group">
+                <div class="radio">
+                    <input type="radio" name="classTypeGroup" id="classTypeSlice" value="slice" [(ngModel)]="currentDicomMetadata.class_type">
+                    <label for="classTypeSlice">Slice</label>
+                </div>
+                <div class="radio">
+                    <input type="radio" name="classTypeGroup" id="classType3D" value="3d" [(ngModel)]="currentDicomMetadata.class_type">
+                    <label for="classType3D">3D</label>
+                </div>
+                <div class="radio">
+                    <input type="radio" name="classTypeGroup" id="classTypeMultiSlices" value="multi_slices" [(ngModel)]="currentDicomMetadata.class_type">
+                    <label for="classTypeMultiSlices">Multi slices</label>
+                </div>
+            </div>
+            <div class="radios-group">
+                <div class="radio">
+                    <input type="radio" name="classTypeGroup" id="classTypeSliceWithDopler" value="slice_with_doppler" [(ngModel)]="currentDicomMetadata.class_type">
+                    <label for="classTypeSliceWithDopler">Slice with doppler</label>
+                </div>
+                <div class="radio">
+                    <input type="radio" name="classTypeGroup" id="classTypeOther" value="other" [(ngModel)]="currentDicomMetadata.class_type">
+                    <label for="classTypeOther">Other</label>
+                </div>
+            </div>
+        </div>
     </div> 
 
 </div>

@@ -87,14 +87,14 @@ def create_thumbnail():
     Returns:
         image name (string)
     """
-    dicoms_list = [os.path.splitext(filename)[0] for filename in os.listdir(upload_dir) if filename.find(".dcm") > 0]
+    dicoms_list = [filename for filename in os.listdir(upload_dir) if filename != 'mask' and filename != 'metadata' and filename != 'thumbnails']
     mkdir_p(thumbnails_dir)
 
     thumbnails_list = [os.path.splitext(filename)[0] for filename in os.listdir(thumbnails_dir)]
 
     for dicom_file_name in dicoms_list:
         if dicom_file_name not in thumbnails_list:
-            dicom_file = '{0}/{1}.dcm'.format(upload_dir, dicom_file_name)
+            dicom_file = '{0}/{1}'.format(upload_dir, dicom_file_name)
             dataset = pydicom.dcmread(dicom_file)
 
             is_pixel_array = has_pixel_array(dataset)
@@ -102,7 +102,7 @@ def create_thumbnail():
             if is_pixel_array is not None:
                 pixel_data = normalize_and_scale(dataset.pixel_array)
 
-                image_name = '{}.jpg'.format(dicom_file_name)
+                image_name = '{}.jpg'.format(os.path.splitext(dicom_file_name)[0])
 
                 # crop and save thumbnail image
                 thumbnail_path = os.path.join(thumbnails_dir, image_name)

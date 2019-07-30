@@ -9,7 +9,7 @@ COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
 
 COPY ./dicom-segmentation /app
-COPY ./data /data
+# COPY ./data /data
 # COPY . .
 
 RUN python3 -m venv env
