@@ -23,16 +23,18 @@ def home():
 
 @app.route('/study/', methods=['GET'])
 def list_study():
-    dicoms_list = [os.path.splitext(filename)[0] for filename in os.listdir(PATH) if filename.find(".dcm") > 0]
+    dicoms_list = [filename for filename in os.listdir(PATH) if filename != 'mask' and filename != 'metadata' and filename != 'thumbnails']
     masks_list = [os.path.splitext(filename)[0] for filename in os.listdir(MASK)]
     json_data = []
     for dicom in dicoms_list:
+        dicom_id = os.path.splitext(dicom)[0]
         data = {}
-        if dicom in masks_list:
+        if dicom_id in masks_list:
             data['has_mask'] = "true"
         else:
             data['has_mask'] = "false"
-        data['_id'] = dicom
+        data['_id'] = dicom_id
+        data['filename'] = dicom
         json_data.append(data)
     
     return jsonify({"data": json_data})
@@ -40,8 +42,7 @@ def list_study():
 
 @app.route('/study/<string:study_id>/', methods=['GET'])
 def load_study(study_id):
-    file_name = '{}.dcm'.format(study_id)
-    return send_from_directory(directory=PATH, filename=file_name, as_attachment=True)
+    return send_from_directory(directory=PATH, filename=study_id, as_attachment=True)
 
 @app.route('/study/<study_id>/metadata', methods=['GET'])
 def load_metadata(study_id):

@@ -24,10 +24,12 @@ export class DICOMViewerComponent implements OnInit {
     public dicomsList = [];
     public currentDicom = {
         _id: '',
-        has_mask: "false"
+        has_mask: 'false',
+        filename: ''
     };
     public currentDicomMetadata = {
-        relevant: ''
+        relevant: '',
+        class_type: ''
     };
     public currentDicomEl;
     public currentSeriesIndex = 0;
@@ -105,7 +107,7 @@ export class DICOMViewerComponent implements OnInit {
     loadDicomById(dicomData, event) {
         this.currentDicom = dicomData;
         this.resetAllTools();
-        this.dicomService.getDicomById(this.currentDicom._id).subscribe(
+        this.dicomService.getDicomById(this.currentDicom.filename).subscribe(
             (data: File) => {
                 var listOfDicomsFile = document.getElementsByClassName('list-group-item') as HTMLCollection;
                 for (var i = 0; i < listOfDicomsFile.length; i++) {
@@ -145,7 +147,8 @@ export class DICOMViewerComponent implements OnInit {
         },
             err => {
                 this.currentDicomMetadata = {
-                    relevant: ''
+                    relevant: '',
+                    class_type: ''
                 };
         });
     }
